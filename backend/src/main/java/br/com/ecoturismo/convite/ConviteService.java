@@ -37,7 +37,7 @@ public class ConviteService {
         Party party = partyService.buscarPorId(req.partyId());
         partyService.exigirMembro(party, remetente.getId());
 
-        Usuario destinatario = usuarioService.buscarPorEmail(req.email());
+        Usuario destinatario = destinatario(req);
         if (bloqueioRepository.existeEntre(remetente.getId(), destinatario.getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Não é possível convidar este usuário");
         }
@@ -57,8 +57,23 @@ public class ConviteService {
         return repository.save(c);
     }
 
+    private Usuario destinatario(ConviteRequest req) {
+        if (req.usuarioId() != null) return usuarioService.buscarPorId(req.usuarioId());
+        if (req.email() != null && !req.email().isBlank()) return usuarioService.buscarPorEmail(req.email().trim());
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe o e-mail ou o usuário a convidar");
+    }
+
+    /** Pendentes e já respondidos, mais recentes primeiro (a tela separa uns dos outros). */
+    @Transactional(readOnly = true)
     public List<Convite> recebidos(String email) {
-        return repository.findPendentesByDestinatarioId(usuarioService.buscarPorEmail(email).getId());
+        return repository.findRecebidos(usuarioService.buscarPorEmail(email).getId());
+    }
+
+    /** Convites de uma party e a situação de cada um; qualquer membro vê, já que qualquer membro pode convidar. */
+    @Transactional(readOnly = true)
+    public List<Convite> daParty(String email, Long partyId) {
+        partyService.buscarComoMembro(email, partyId);
+        return repository.findDaParty(partyId);
     }
 
     public Convite aceitar(String email, Long id) {

@@ -11,6 +11,7 @@ import br.com.ecoturismo.avisoperigo.dto.AvisoRequest;
 import br.com.ecoturismo.trilha.TrilhaService;
 import br.com.ecoturismo.usuario.Usuario;
 import br.com.ecoturismo.usuario.UsuarioService;
+import br.com.ecoturismo.visita.Visita;
 import br.com.ecoturismo.visita.VisitaRepository;
 
 @Service
@@ -33,15 +34,22 @@ public class AvisoPerigoService {
     public AvisoPerigo registrar(String email, AvisoRequest req) {
         Usuario u = usuarioService.buscarPorEmail(email);
         if (req.trilhaId() != null) trilhaService.garantirQueExiste(req.trilhaId());
+        Long trilhaId = req.trilhaId();
         if (req.visitaId() != null) {
-            boolean minha = visitaRepository.findById(req.visitaId()).map(v -> v.getUsuarioId().equals(u.getId())).orElse(false);
-            if (!minha) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Visita inválida");
+            Visita v = visitaRepository.findById(req.visitaId())
+                    .filter(x -> x.getUsuarioId().equals(u.getId()))
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Visita inválida"));
+            // a visita já diz qual é a trilha; se vier as duas, têm de bater
+            if (trilhaId != null && !trilhaId.equals(v.getTrilhaId())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A visita não é desta trilha");
+            }
+            trilhaId = v.getTrilhaId();
         }
         AvisoPerigo a = new AvisoPerigo();
         a.setTipo(req.tipo());
         a.setUsuarioId(u.getId());
         a.setTrilhaTexto(req.trilha().trim());
-        a.setTrilhaId(req.trilhaId());
+        a.setTrilhaId(trilhaId);
         a.setVisitaId(req.visitaId());
         a.setMensagem(req.mensagem().trim());
         return repository.save(a);
@@ -50,6 +58,14 @@ public class AvisoPerigoService {
     @Transactional(readOnly = true)
     public List<AvisoPerigo> listar() {
         return repository.findAllByOrderByCriadoEmDesc();
+    }
+
+    /** Avisos de perigo de todas as trilhas, mais recentes primeiro; sem status, vêm todos. */
+    @Transactional(readOnly = true)
+    public List<AvisoPerigo> perigos(StatusAviso statusOuNull) {
+        return statusOuNull == null
+                ? repository.findByTipoOrderByCriadoEmDesc(TipoAviso.PERIGO)
+                : repository.findByTipoAndStatusOrderByCriadoEmDesc(TipoAviso.PERIGO, statusOuNull);
     }
 
     @Transactional(readOnly = true)

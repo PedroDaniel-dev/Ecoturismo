@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Camera, ImagePlus, Trash2, X } from 'lucide-react';
+import { CalendarDays, Camera, ImagePlus, Trash2, X } from 'lucide-react';
 import { useTrails } from '../../context/TrailsContext';
 import { useAuth } from '../../context/AuthContext';
 import { api as http } from '../../utils/api';
 import { avatarFor } from '../../utils/trailArt';
+import { useFormatDate } from './ProfileCards';
 
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_BYTES = 2 * 1024 * 1024; // mesmo limite do backend (spring.servlet.multipart.max-file-size)
@@ -15,7 +16,7 @@ const MAX_BYTES = 2 * 1024 * 1024; // mesmo limite do backend (spring.servlet.mu
 const imageError = file => (!IMAGE_TYPES.includes(file.type) ? 'photo_type' : file.size > MAX_BYTES ? 'photo_too_big' : '');
 
 // mensagem do backend quando houver (ex.: "A imagem deve ter no máximo 2 MB"), senão a genérica
-const errorText = (err, t) => (err?.message && !err.message.startsWith('HTTP') ? err.message : t('save_error'));
+export const errorText = (err, t) => (err?.message && !err.message.startsWith('HTTP') ? err.message : t('save_error'));
 
 export function Modal({ title, onClose, children }) {
   const { t } = useTranslation();
@@ -49,13 +50,13 @@ export function Modal({ title, onClose, children }) {
   );
 }
 
-const Label = ({ htmlFor, children }) => (
+export const Label = ({ htmlFor, children }) => (
   <label htmlFor={htmlFor} className="block text-xs font-bold uppercase tracking-[0.18em] text-ink-muted mb-2">{children}</label>
 );
 
-const ErrorText = ({ children }) => (children ? <p className="text-sm font-semibold text-trail-hard">{children}</p> : null);
+export const ErrorText = ({ children }) => (children ? <p className="text-sm font-semibold text-trail-hard">{children}</p> : null);
 
-function Actions({ onCancel, submitLabel, busy, danger }) {
+export function Actions({ onCancel, submitLabel, busy, danger }) {
   const { t } = useTranslation();
   return (
     <div className="flex justify-end gap-3 pt-2">
@@ -323,6 +324,74 @@ export function AddPhotoDialog({ onSubmit, onClose }) {
 
         <ErrorText>{error}</ErrorText>
         <Actions onCancel={onClose} submitLabel={t('send')} busy={busy} />
+      </form>
+    </Modal>
+  );
+}
+
+// Aviso de perigo sempre a partir de uma visita concluída: trilha e visita já vêm escolhidas, só falta contar o que houve.
+export function DangerReportDialog({ trail, visit, onClose }) {
+  const { t } = useTranslation();
+  const { token } = useAuth();
+  const fmt = useFormatDate();
+  const [text, setText] = useState('');
+  const [sent, setSent] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+
+  const submit = async e => {
+    e.preventDefault();
+    if (text.trim().length < 10) { setError(t('danger_too_short')); return; }
+    setBusy(true); setError('');
+    try {
+      await http('/avisos', {
+        method: 'POST', token,
+        body: { tipo: 'PERIGO', trilha: trail.name, trilhaId: trail.id, visitaId: visit.id, mensagem: text.trim() },
+      });
+      setSent(true);
+    } catch (err) { setError(errorText(err, t)); }
+    setBusy(false);
+  };
+
+  if (sent) {
+    return (
+      <Modal title={t('danger_dialog_title')} onClose={onClose}>
+        <p className="text-ink-muted leading-relaxed mb-6">{t('danger_sent')}</p>
+        <div className="flex justify-end gap-3">
+          <Link to="/avisos" className="btn-ghost px-5 py-2.5">{t('danger_see_all')}</Link>
+          <button onClick={onClose} className="btn-primary px-5 py-2.5">{t('close')}</button>
+        </div>
+      </Modal>
+    );
+  }
+
+  return (
+    <Modal title={t('danger_dialog_title')} onClose={onClose}>
+      <form onSubmit={submit} className="space-y-5">
+        <div className="flex items-center gap-4 rounded-xl border border-border bg-surface-2/50 p-3">
+          <img src={trail.images[0]} alt="" className="h-14 w-14 shrink-0 rounded-lg object-cover" />
+          <div className="min-w-0">
+            <p className="font-semibold text-ink truncate">{trail.name}</p>
+            <p className="flex items-center gap-1.5 text-sm text-ink-muted">
+              <CalendarDays size={14} className="text-brand" />{t('danger_visit_on', { date: fmt(visit.data) })}
+            </p>
+          </div>
+        </div>
+
+        <div>
+          <Label htmlFor="danger-text">{t('danger_what')}</Label>
+          <textarea
+            id="danger-text" value={text} onChange={e => setText(e.target.value)} maxLength={2000} rows={5} autoFocus
+            placeholder={t('danger_placeholder')} className="input resize-none"
+          />
+          <div className="mt-1 flex justify-between gap-3 text-xs text-ink-muted">
+            <span>{t('danger_when_note')}</span>
+            <span className="tabular-nums">{text.length}/2000</span>
+          </div>
+        </div>
+
+        <ErrorText>{error}</ErrorText>
+        <Actions onCancel={onClose} submitLabel={t('danger_send')} busy={busy} danger />
       </form>
     </Modal>
   );

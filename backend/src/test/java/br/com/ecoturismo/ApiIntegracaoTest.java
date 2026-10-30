@@ -236,8 +236,62 @@ class ApiIntegracaoTest {
         long id2 = ler(enviarJson(post("/api/convites"), tHugo, convite).andExpect(status().isCreated())).get("id").asLong();
         assertThat(id2).isEqualTo(id1);
         mvc.perform(comToken(patch("/api/convites/" + id2 + "/aceitar"), tIris)).andExpect(jsonPath("$.status").value("ACEITO"));
-        mvc.perform(comToken(get("/api/parties/" + party.get("id").asLong()), tIris)).andExpect(jsonPath("$.membros", hasSize(2)));
+        mvc.perform(comToken(get("/api/parties/" + party.get("id").asLong()), tIris))
+                .andExpect(jsonPath("$.membros", hasSize(2)))
+                .andExpect(jsonPath("$.lider.nome").value("Hugo"));
         mvc.perform(comToken(delete("/api/parties/" + party.get("id").asLong()), tHugo)).andExpect(status().isNoContent());
+    }
+
+    @Test
+    void lideresEditamEConvidamAmigosPeloId() throws Exception {
+        var jade = cadastrar("Jade");
+        var kai = cadastrar("Kai");
+        String tJade = (String) jade.get("token"), tKai = (String) kai.get("token");
+        var dados = Map.of("nome", "Urca ao amanhecer", "trilhaId", idDaTrilha("Morro da Urca"),
+                "data", LocalDate.now().plusDays(3).toString(), "horario", "05:30");
+        long party = ler(enviarJson(post("/api/parties"), tJade, dados).andExpect(status().isCreated())).get("id").asLong();
+
+        enviarJson(post("/api/convites"), tJade, Map.of("partyId", party)).andExpect(status().isBadRequest());
+        long convite = ler(enviarJson(post("/api/convites"), tJade, Map.of("partyId", party, "usuarioId", kai.get("id")))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.party.nome").value("Urca ao amanhecer"))
+                .andExpect(jsonPath("$.remetente.nome").value("Jade"))).get("id").asLong();
+        mvc.perform(comToken(get("/api/convites/party/" + party), tJade)).andExpect(jsonPath("$[0].convidado.nome").value("Kai"));
+        mvc.perform(comToken(get("/api/convites/party/" + party), tKai)).andExpect(status().isForbidden());
+
+        mvc.perform(comToken(patch("/api/convites/" + convite + "/aceitar"), tKai));
+        // respondidos continuam na lista de recebidos
+        mvc.perform(comToken(get("/api/convites/recebidos"), tKai)).andExpect(jsonPath("$[0].status").value("ACEITO"));
+
+        var editado = Map.of("nome", "Urca + Pão de Açúcar", "trilhaId", idDaTrilha("Morro da Urca"),
+                "data", LocalDate.now().plusDays(4).toString(), "horario", "06:00");
+        enviarJson(put("/api/parties/" + party), tKai, editado).andExpect(status().isForbidden());
+        enviarJson(put("/api/parties/" + party), tJade, editado)
+                .andExpect(jsonPath("$.nome").value("Urca + Pão de Açúcar"))
+                .andExpect(jsonPath("$.horario").value("06:00:00"))
+                .andExpect(jsonPath("$.membros", hasSize(2)));
+    }
+
+    @Test
+    void avisoPelaVisitaApareceNaListaPublica() throws Exception {
+        var lia = cadastrar("Lia");
+        String token = (String) lia.get("token");
+        long trilha = idDaTrilha("Pedra Bonita");
+        long visita = ler(enviarJson(post("/api/visitas/concluida"), token,
+                Map.of("trilhaId", trilha, "data", LocalDate.now().minusDays(1).toString(), "avaliacao", 4))).get("id").asLong();
+
+        var outraTrilha = Map.of("tipo", "PERIGO", "trilha", "Pedra da Gávea", "trilhaId", idDaTrilha("Pedra da Gávea"),
+                "visitaId", visita, "mensagem", "Abelhas no mirante.");
+        enviarJson(post("/api/avisos"), token, outraTrilha).andExpect(status().isBadRequest());
+
+        long aviso = ler(enviarJson(post("/api/avisos"), token, Map.of("tipo", "PERIGO", "trilha", "Pedra Bonita",
+                "visitaId", visita, "mensagem", "Enxame de abelhas na rampa de voo.")).andExpect(status().isCreated()))
+                .get("id").asLong();
+        mvc.perform(get("/api/avisos/perigos?status=ATIVO"))
+                .andExpect(jsonPath("$[0].id").value((int) aviso))
+                .andExpect(jsonPath("$[0].trilhaId").value((int) trilha))
+                .andExpect(jsonPath("$[*].tipo", not(hasItem("SUGESTAO"))));
+        mvc.perform(get("/api/avisos/perigos?status=RESOLVIDO")).andExpect(jsonPath("$[*].id", not(hasItem((int) aviso))));
     }
 
     // ── dados de teste ──

@@ -30,14 +30,31 @@ public class PartyService {
         trilhaService.garantirQueExiste(req.trilhaId());
         Usuario lider = usuarioService.buscarPorEmail(email);
         Party p = new Party();
+        preencher(p, req);
+        p.setLiderId(lider.getId());
+        p.getMembros().add(lider.getId());
+        return repository.save(p);
+    }
+
+    /** Só o líder muda nome, descrição, trilha, data e horário. Membros e convites continuam como estão. */
+    public Party editar(String email, Long id, PartyRequest req) {
+        Party p = buscarPorId(id);
+        exigirLider(p, usuarioService.buscarPorEmail(email).getId(), "Apenas o líder pode editar o grupo");
+        trilhaService.garantirQueExiste(req.trilhaId());
+        preencher(p, req);
+        return repository.save(p);
+    }
+
+    private static void preencher(Party p, PartyRequest req) {
         p.setNome(req.nome().trim());
         p.setDescricao(req.descricao() == null || req.descricao().isBlank() ? null : req.descricao().trim());
         p.setTrilhaId(req.trilhaId());
         p.setData(req.data());
         p.setHorario(req.horario());
-        p.setLiderId(lider.getId());
-        p.getMembros().add(lider.getId());
-        return repository.save(p);
+    }
+
+    private static void exigirLider(Party p, Long usuarioId, String mensagem) {
+        if (!p.getLiderId().equals(usuarioId)) throw new ResponseStatusException(HttpStatus.FORBIDDEN, mensagem);
     }
 
     public List<Party> minhas(String email) {
@@ -85,9 +102,7 @@ public class PartyService {
 
     public void excluir(String email, Long id) {
         Party p = buscarPorId(id);
-        if (!p.getLiderId().equals(usuarioService.buscarPorEmail(email).getId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Apenas o líder pode excluir o grupo");
-        }
+        exigirLider(p, usuarioService.buscarPorEmail(email).getId(), "Apenas o líder pode excluir o grupo");
         repository.deleteById(id);
     }
 }

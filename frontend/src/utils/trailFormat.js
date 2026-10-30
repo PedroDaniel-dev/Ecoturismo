@@ -59,6 +59,9 @@ export function fromApi(t) {
     maintenance: t.situacao === 'MANUTENCAO',
     opensAt: formatTime(t.horarioAbertura),
     closesAt: formatTime(t.horarioFechamento),
+    // "06:30", para comparar com o horário de uma party
+    opensAtRaw: t.horarioAbertura?.slice(0, 5) || null,
+    closesAtRaw: t.horarioFechamento?.slice(0, 5) || null,
     schedule: t.observacaoHorario,
     shortDescription: t.descricaoCurta,
     description: t.descricao,

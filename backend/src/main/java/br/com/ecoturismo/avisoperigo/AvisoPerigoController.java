@@ -46,6 +46,12 @@ public class AvisoPerigoController {
         return service.perigosAtivos(trilhaId).stream().map(this::resposta).toList();
     }
 
+    /** Público: avisos de perigo de todas as trilhas (página /avisos), com filtro opcional de status. */
+    @GetMapping("/perigos")
+    public List<AvisoResponse> perigos(@RequestParam(required = false) StatusAviso status) {
+        return service.perigos(status).stream().map(this::resposta).toList();
+    }
+
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public List<AvisoResponse> listar() {

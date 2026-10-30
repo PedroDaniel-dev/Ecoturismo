@@ -2,9 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Moon, Sun, ChevronDown, Check, LogIn, LogOut, Heart, Menu, X } from 'lucide-react';
+import { Moon, Sun, ChevronDown, Check, LogIn, LogOut, Heart, Menu, X, Bell } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import { useInvites } from '../context/InvitesContext';
+import { useTrails } from '../context/TrailsContext';
+import { InviteCard } from './party/PartyCards';
 import { LANGUAGES } from '../i18n';
 import { Flag } from './Flag';
 
@@ -95,6 +98,63 @@ function UserButton() {
   );
 }
 
+// Sino com os convites pendentes; dá para aceitar ou recusar sem sair da página
+function InvitesBell() {
+  const { t } = useTranslation();
+  const { isLoggedIn } = useAuth();
+  const { pending, respond, reload } = useInvites();
+  const { trailById } = useTrails();
+  const [open, setOpen] = useState(false);
+  const [busyId, setBusyId] = useState(null);
+  const ref = useRef(null);
+  useClickOutside(ref, () => setOpen(false));
+  const { pathname } = useLocation();
+
+  useEffect(() => { setOpen(false); }, [pathname]);
+
+  if (!isLoggedIn) return null;
+
+  const toggle = () => { if (!open) reload(); setOpen(o => !o); };
+  const onRespond = async (id, accept) => {
+    setBusyId(id);
+    try { await respond(id, accept); } catch (e) { /* continua pendente */ }
+    setBusyId(null);
+  };
+
+  // no celular o menu se alinha à navbar (não ao sino), senão vazaria pela esquerda da tela
+  return (
+    <div className="sm:relative" ref={ref}>
+      <button
+        onClick={toggle} aria-expanded={open}
+        aria-label={t('invites_aria', { count: pending.length })} title={t('invites_title')}
+        className="relative p-2.5 rounded-xl text-ink hover:bg-surface-2/70 hover:text-brand transition"
+      >
+        <Bell size={18} />
+        {pending.length > 0 && (
+          <span className="absolute top-1 right-1 min-w-[1.125rem] rounded-full bg-trail-hard px-1 text-center text-[10px] font-bold leading-[1.125rem] text-white">{pending.length}</span>
+        )}
+      </button>
+      {open && (
+        <div className="absolute right-4 sm:right-0 mt-3 w-[22rem] max-w-[calc(100vw-2rem)] rounded-2xl border border-border bg-surface/95 backdrop-blur-xl shadow-xl p-3 animate-rise" style={{ animationDuration: '.25s' }}>
+          <p className="px-1 pb-2 text-xs font-bold uppercase tracking-[0.18em] text-ink-muted">{t('invites_title')}</p>
+          {pending.length === 0 ? (
+            <p className="px-1 py-3 text-sm text-ink-muted">{t('invites_empty')}</p>
+          ) : (
+            <div className="max-h-[60vh] space-y-2 overflow-y-auto">
+              {pending.slice(0, 4).map(c => (
+                <InviteCard key={c.id} invite={c} trail={trailById(c.party.trilhaId)} onRespond={onRespond} busy={busyId === c.id} compact />
+              ))}
+            </div>
+          )}
+          <Link to="/parties?aba=convites" className="mt-2 block rounded-xl px-3 py-2.5 text-center text-sm font-semibold text-brand hover:bg-surface-2">
+            {t('invites_see_all')}
+          </Link>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function Navbar() {
   const { t } = useTranslation();
   const { theme, toggleTheme } = useTheme();
@@ -111,9 +171,11 @@ export function Navbar() {
           ECOTURISMO <span className="text-brand">RIO</span>
         </button>
 
-        <div className="hidden md:flex items-center gap-1">
+        <div className="hidden lg:flex items-center gap-1">
           <NavLink to="/" end className={linkCls}>{t('home')}</NavLink>
           <NavLink to="/trilhas" viewTransition className={linkCls}>{t('trails')}</NavLink>
+          <NavLink to="/parties" className={linkCls}>{t('nav_parties')}</NavLink>
+          <NavLink to="/avisos" className={linkCls}>{t('nav_dangers')}</NavLink>
         </div>
 
         <button
@@ -126,9 +188,10 @@ export function Navbar() {
         </button>
 
         <LanguageSelect />
+        <InvitesBell />
         <UserButton />
 
-        <button className="md:hidden p-2.5 rounded-xl text-ink hover:bg-surface-2/70" onClick={() => setMobileOpen(o => !o)} aria-label="Menu">
+        <button className="lg:hidden p-2.5 rounded-xl text-ink hover:bg-surface-2/70" onClick={() => setMobileOpen(o => !o)} aria-label="Menu">
           {mobileOpen ? <X size={18} /> : <Menu size={18} />}
         </button>
       </nav>
@@ -156,7 +219,7 @@ function SideMenu({ open, onClose, linkCls }) {
   }, [open, onClose]);
 
   return createPortal(
-    <div className={`md:hidden fixed inset-0 z-[60] transition-[visibility] duration-300 ${open ? 'visible' : 'invisible'}`} aria-hidden={!open}>
+    <div className={`lg:hidden fixed inset-0 z-[60] transition-[visibility] duration-300 ${open ? 'visible' : 'invisible'}`} aria-hidden={!open}>
       <div onClick={onClose} className={`absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0'}`} />
       <aside
         role="dialog" aria-modal="true" aria-label="Menu"
@@ -172,6 +235,8 @@ function SideMenu({ open, onClose, linkCls }) {
         </div>
         <NavLink to="/" end onClick={onClose} className={linkCls}>{t('home')}</NavLink>
         <NavLink to="/trilhas" onClick={onClose} className={linkCls}>{t('trails')}</NavLink>
+        <NavLink to="/parties" onClick={onClose} className={linkCls}>{t('nav_parties')}</NavLink>
+        <NavLink to="/avisos" onClick={onClose} className={linkCls}>{t('nav_dangers')}</NavLink>
       </aside>
     </div>,
     document.body

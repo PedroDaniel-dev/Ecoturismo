@@ -9,12 +9,22 @@ import org.springframework.data.repository.query.Param;
 
 public interface ConviteRepository extends JpaRepository<Convite, Long> {
 
-    List<Convite> findByDestinatarioIdAndStatus(Long destinatarioId, StatusConvite status);
-
     Optional<Convite> findByPartyIdAndDestinatarioId(Long partyId, Long destinatarioId);
 
-    default List<Convite> findPendentesByDestinatarioId(Long usuarioId) {
-        return findByDestinatarioIdAndStatus(usuarioId, StatusConvite.PENDENTE);
+    List<Convite> findByDestinatarioIdAndStatusNotOrderByCriadoEmDesc(Long destinatarioId, StatusConvite status);
+
+    List<Convite> findByPartyIdAndStatusNotOrderByCriadoEmDesc(Long partyId, StatusConvite status);
+
+    /**
+     * Cancelados ficam de fora: o convite só é cancelado quando um bloqueia o outro, e mostrar isso
+     * revelaria o bloqueio.
+     */
+    default List<Convite> findRecebidos(Long usuarioId) {
+        return findByDestinatarioIdAndStatusNotOrderByCriadoEmDesc(usuarioId, StatusConvite.CANCELADO);
+    }
+
+    default List<Convite> findDaParty(Long partyId) {
+        return findByPartyIdAndStatusNotOrderByCriadoEmDesc(partyId, StatusConvite.CANCELADO);
     }
 
     /** Convites pendentes entre os dois, em qualquer direção (usado ao bloquear). */

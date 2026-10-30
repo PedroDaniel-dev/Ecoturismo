@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, Navigate, useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Ban, CalendarDays, Check, Flag, ImagePlus, MoreHorizontal, Pencil, UserCheck, UserPlus } from 'lucide-react';
+import { Ban, CalendarDays, Check, Flag, ImagePlus, MoreHorizontal, Pencil, ShieldAlert, UserCheck, UserPlus } from 'lucide-react';
 import { Layout } from '../components/Layout';
 import { TrailCard } from '../components/TrailCard';
 import { ReviewCard, VisitCard, PhotoCard, PersonCard, parseDate } from '../components/profile/ProfileCards';
-import { EditProfileDialog, BlockDialog, ReportDialog, AddPhotoDialog, PeopleDialog } from '../components/profile/ProfileDialogs';
+import { EditProfileDialog, BlockDialog, ReportDialog, AddPhotoDialog, PeopleDialog, DangerReportDialog } from '../components/profile/ProfileDialogs';
 import { useAuth } from '../context/AuthContext';
 import { useTrails } from '../context/TrailsContext';
 import { avatarFor } from '../utils/trailArt';
@@ -64,6 +64,7 @@ function ProfilePage() {
   const [status, setStatus] = useState('loading'); // loading | ready | not_found | error
   const [items, setItems] = useState(null);
   const [dialog, setDialog] = useState(null); // edit | block | report | photo | followers | following
+  const [dangerOf, setDangerOf] = useState(null); // { trail, visit }: aviso de perigo a partir de uma visita
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -75,7 +76,7 @@ function ProfilePage() {
     return () => { alive = false; };
   }, [p, id]);
 
-  useEffect(() => setDialog(null), [id]);
+  useEffect(() => { setDialog(null); setDangerOf(null); }, [id]);
 
   const blocked = !!profile?.euBloqueei;
   useEffect(() => {
@@ -89,6 +90,7 @@ function ProfilePage() {
   const loadFollowers = useCallback(() => p.followers(id), [p, id]);
   const loadFollowing = useCallback(() => p.following(id), [p, id]);
   const closeDialog = useCallback(() => setDialog(null), []);
+  const closeDanger = useCallback(() => setDangerOf(null), []);
 
   const toggleFollow = async () => {
     setBusy(true);
@@ -264,7 +266,22 @@ function ProfilePage() {
                 const trail = trailById(it.trilhaId);
                 if (!trail) return null;
                 if (tab === 'avaliacoes') return <ReviewCard key={it.id} trail={trail} review={it} />;
-                if (tab === 'visitas') return <VisitCard key={it.id} trail={trail} visit={it} />;
+                if (tab === 'visitas') {
+                  // o botão fica fora do card, que inteiro é um link para a trilha
+                  return (
+                    <div key={it.id} className="relative">
+                      <VisitCard trail={trail} visit={it} />
+                      {me && it.status === 'CONCLUIDA' && (
+                        <button
+                          onClick={() => setDangerOf({ trail, visit: it })}
+                          className="absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-black/55 backdrop-blur px-3 py-1.5 text-xs font-semibold text-white hover:bg-trail-hard transition"
+                        >
+                          <ShieldAlert size={14} />{t('report_danger')}
+                        </button>
+                      )}
+                    </div>
+                  );
+                }
                 return <PhotoCard key={it.id} trail={trail} photo={it} />;
               })}
             </div>
@@ -277,6 +294,7 @@ function ProfilePage() {
       {dialog === 'report' && <ReportDialog name={profile.nome} onSubmit={(motivo, descricao) => p.report(id, motivo, descricao)} onClose={closeDialog} />}
       {dialog === 'photo' && <AddPhotoDialog onSubmit={photoAdded} onClose={closeDialog} />}
       {dialog === 'followers' && <PeopleDialog title={t('followers_title', { name: profile.nome })} empty={t('no_followers')} load={loadFollowers} onClose={closeDialog} />}
+      {dangerOf && <DangerReportDialog trail={dangerOf.trail} visit={dangerOf.visit} onClose={closeDanger} />}
       {dialog === 'following' && <PeopleDialog title={t('following_title', { name: profile.nome })} empty={t('no_following')} load={loadFollowing} onClose={closeDialog} />}
     </Layout>
   );

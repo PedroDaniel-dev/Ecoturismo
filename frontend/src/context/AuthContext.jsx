@@ -9,6 +9,7 @@ export const userFromApi = u => ({
   id: u.id,
   name: u.nome,
   email: u.email,
+  role: u.role,
   avatar: u.fotoUrl || avatarFor(u.nome),
   bio: u.bio || '',
   birthDate: u.dataNascimento,

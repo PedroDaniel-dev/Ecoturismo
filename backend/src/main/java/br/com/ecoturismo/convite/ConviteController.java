@@ -15,6 +15,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.com.ecoturismo.convite.dto.ConviteRequest;
 import br.com.ecoturismo.convite.dto.ConviteResponse;
+import br.com.ecoturismo.party.PartyService;
+import br.com.ecoturismo.party.dto.PartyResumo;
+import br.com.ecoturismo.usuario.UsuarioService;
+import br.com.ecoturismo.usuario.dto.UsuarioResumo;
 import jakarta.validation.Valid;
 
 @RestController
@@ -22,29 +26,44 @@ import jakarta.validation.Valid;
 public class ConviteController {
 
     private final ConviteService service;
+    private final PartyService partyService;
+    private final UsuarioService usuarioService;
 
-    public ConviteController(ConviteService service) {
+    public ConviteController(ConviteService service, PartyService partyService, UsuarioService usuarioService) {
         this.service = service;
+        this.partyService = partyService;
+        this.usuarioService = usuarioService;
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ConviteResponse convidar(Authentication auth, @Valid @RequestBody ConviteRequest req) {
-        return ConviteResponse.de(service.convidar(auth.getName(), req));
+        return resposta(service.convidar(auth.getName(), req));
     }
 
     @GetMapping("/recebidos")
     public List<ConviteResponse> recebidos(Authentication auth) {
-        return service.recebidos(auth.getName()).stream().map(ConviteResponse::de).toList();
+        return service.recebidos(auth.getName()).stream().map(this::resposta).toList();
+    }
+
+    @GetMapping("/party/{partyId}")
+    public List<ConviteResponse> daParty(Authentication auth, @PathVariable Long partyId) {
+        return service.daParty(auth.getName(), partyId).stream().map(this::resposta).toList();
     }
 
     @PatchMapping("/{id}/aceitar")
     public ConviteResponse aceitar(Authentication auth, @PathVariable Long id) {
-        return ConviteResponse.de(service.aceitar(auth.getName(), id));
+        return resposta(service.aceitar(auth.getName(), id));
     }
 
     @PatchMapping("/{id}/recusar")
     public ConviteResponse recusar(Authentication auth, @PathVariable Long id) {
-        return ConviteResponse.de(service.recusar(auth.getName(), id));
+        return resposta(service.recusar(auth.getName(), id));
+    }
+
+    private ConviteResponse resposta(Convite c) {
+        return ConviteResponse.de(c, PartyResumo.de(partyService.buscarPorId(c.getPartyId())),
+                UsuarioResumo.de(usuarioService.buscarPorId(c.getRemetenteId())),
+                UsuarioResumo.de(usuarioService.buscarPorId(c.getDestinatarioId())));
     }
 }

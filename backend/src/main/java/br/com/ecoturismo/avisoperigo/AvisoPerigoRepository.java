@@ -10,6 +10,10 @@ public interface AvisoPerigoRepository extends JpaRepository<AvisoPerigo, Long> 
 
     List<AvisoPerigo> findAllByOrderByCriadoEmDesc();
 
+    List<AvisoPerigo> findByTipoOrderByCriadoEmDesc(TipoAviso tipo);
+
+    List<AvisoPerigo> findByTipoAndStatusOrderByCriadoEmDesc(TipoAviso tipo, StatusAviso status);
+
     /** Perigos ainda não resolvidos de uma trilha, para mostrar na página dela. */
     default List<AvisoPerigo> findAtivosByTrilhaId(Long trilhaId) {
         return findByTrilhaIdAndTipoAndStatusNotOrderByCriadoEmDesc(trilhaId, TipoAviso.PERIGO, StatusAviso.RESOLVIDO);
