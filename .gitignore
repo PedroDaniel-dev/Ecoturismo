@@ -1,0 +1,33 @@
+# Arquivos que o Git não deve versionar (nem subir para o GitHub).
+# Uma regra por linha; "pasta/" vale para qualquer pasta com esse nome, em qualquer nível do projeto.
+
+# Dependências — reinstaladas com "npm install" / baixadas pelo Maven
+node_modules/
+
+# Builds — gerados por "npm run build" (frontend) e pelo Maven (backend)
+dist/
+target/
+.vite/
+
+# Fotos enviadas pelos usuários quando o backend roda na sua máquina
+backend/uploads/
+
+# Segredos e configurações locais (senha do banco, JWT_SECRET...). Versione só um modelo, ex.: .env.example
+.env
+.env.*
+!.env.example
+*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editores e sistema
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Configurações locais do Claude Code (as compartilhadas ficam em .claude/settings.json)
+.claude/settings.local.json

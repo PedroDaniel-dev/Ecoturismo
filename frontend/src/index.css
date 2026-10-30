@@ -1,0 +1,127 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---------- Tema claro: off-white + dourado ---------- */
+:root {
+  --base: 247 244 236;
+  --surface: 255 253 248;
+  --surface-2: 240 234 220;
+  --ink: 24 38 43;
+  --ink-muted: 92 104 106;
+  --brand: 168 124 38;       /* dourado (texto/ícones) */
+  --brand-ink: 255 253 248;  /* texto sobre botão */
+  --gold: 201 160 74;
+  --border: 226 218 200;
+  --trail-easy: 34 145 84;
+  --trail-moderate: 196 146 10;
+  --trail-hard: 205 52 52;
+  --nav-bg: 255 253 248;
+  color-scheme: light;
+}
+
+/* ---------- Tema escuro: azul petróleo + prata ---------- */
+.dark {
+  --base: 8 38 46;
+  --surface: 13 52 62;
+  --surface-2: 20 66 78;
+  --ink: 238 242 243;
+  --ink-muted: 168 186 191;
+  --brand: 200 209 214;      /* prata */
+  --brand-ink: 8 38 46;
+  --gold: 226 230 233;
+  --border: 34 82 95;
+  --trail-easy: 74 205 128;
+  --trail-moderate: 245 196 66;
+  --trail-hard: 248 105 105;
+  --nav-bg: 8 38 46;
+  color-scheme: dark;
+}
+
+/* ---------- Tipografia ----------
+   Declarada aqui também (além do tailwind.config.js) para não depender do Tailwind recarregar a config:
+   Playfair Display → títulos sofisticados · Cinzel → textos editoriais · Plus Jakarta Sans → todo o resto */
+:root {
+  --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-display: "Playfair Display", Georgia, "Times New Roman", serif;
+  --font-editorial: "Cinzel", "Playfair Display", Georgia, serif;
+}
+html, body, button, input, textarea, select { font-family: var(--font-sans); }
+.font-sans { font-family: var(--font-sans) !important; }
+.font-display { font-family: var(--font-display) !important; }
+.font-editorial { font-family: var(--font-editorial) !important; }
+
+html { scroll-behavior: smooth; }
+body {
+  @apply bg-base text-ink font-sans antialiased;
+  transition: background-color .4s ease, color .4s ease;
+}
+
+@layer components {
+.btn-primary {
+  @apply inline-flex items-center justify-center gap-2 rounded-full bg-brand text-brand-ink font-semibold px-6 py-3 shadow-sm transition hover:brightness-110 hover:-translate-y-0.5 active:translate-y-0;
+}
+.btn-ghost {
+  @apply inline-flex items-center justify-center gap-2 rounded-full border border-border text-ink font-semibold px-6 py-3 transition hover:border-brand hover:text-brand;
+}
+.input {
+  @apply w-full rounded-xl border border-border bg-surface px-4 py-3 text-ink placeholder:text-ink-muted/70 outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20;
+}
+.chip {
+  @apply rounded-full border border-border px-4 py-1.5 text-sm font-medium text-ink-muted transition hover:border-brand hover:text-brand;
+}
+.chip-active {
+  @apply border-brand bg-brand text-brand-ink hover:text-brand-ink;
+}
+}
+
+/* skeleton do mapa */
+.map-skeleton {
+  background: linear-gradient(100deg, rgb(var(--surface-2)) 30%, rgb(var(--surface)) 50%, rgb(var(--surface-2)) 70%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+@keyframes shimmer { to { background-position: -200% 0; } }
+
+/* ---------- Hero cinematográfico ---------- */
+@keyframes fade-in-soft { from { opacity: 0; } }
+.animate-fade-in { animation: fade-in-soft 1.6s ease both; }
+
+.hero-photo { filter: contrast(1.08) saturate(1.15) brightness(1.05); transition: filter .7s ease; }
+.dark .hero-photo { filter: contrast(1.12) saturate(.6) brightness(.55) hue-rotate(-10deg); }
+.hero-vignette { background: radial-gradient(120% 90% at 50% 45%, transparent 55%, rgb(0 0 0 / .45) 100%); }
+.film-grain {
+  opacity: .05;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+@keyframes hero-in { from { opacity: 0; transform: scale(1.08); } to { opacity: 1; transform: scale(1); } }
+.animate-hero-in { animation: hero-in 2.4s cubic-bezier(.2,.7,.2,1) both; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+.animate-rise { animation: rise .9s cubic-bezier(.2,.7,.2,1) both; }
+
+/* ---------- View Transitions (imagem do card -> imagem da trilha) ---------- */
+::view-transition-group(*) {
+  animation-duration: .55s;
+  animation-timing-function: cubic-bezier(.22, .8, .2, 1);
+}
+::view-transition-old(*),
+::view-transition-new(*) {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  overflow: clip;
+}
+::view-transition-old(root) { animation: .3s ease both fade-out; }
+::view-transition-new(root) { animation: .35s ease both fade-in; }
+@keyframes fade-out { to { opacity: 0; } }
+@keyframes fade-in { from { opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+  .animate-rise, .animate-hero-in, .animate-fade-in { animation: none; }
+}
+
+/* ---------- Hero: cor do "RIO", sombra cinematográfica e crista das serras ---------- */
+:root { --rio-text: 255 248 236; --hero-shade: 7 14 23; }
+.dark { --rio-text: 216 226 230; --hero-shade: 4 22 28; }

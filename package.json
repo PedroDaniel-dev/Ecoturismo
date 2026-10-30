@@ -1,0 +1,14 @@
+{
+  "name": "ecoturismo-rio",
+  "private": true,
+  "description": "Atalhos para rodar backend e frontend juntos a partir da raiz",
+  "scripts": {
+    "dev": "concurrently --names back,front --prefix-colors yellow,cyan --kill-others \"npm run back\" \"npm run front\"",
+    "back": "cd backend && ./mvnw spring-boot:run",
+    "front": "npm --prefix frontend run dev",
+    "test": "cd backend && ./mvnw test"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.5"
+  }
+}
