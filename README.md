@@ -65,3 +65,5 @@ Valores aceitos: `dificuldade` = FACIL, MEDIO, DIFICIL (MEDIO aparece como "Mode
 
 ## Testes de desempenho (k6)
 Com o backend rodando, `npm run k6:smoke` (verificação rápida), `npm run k6:carga` (uso esperado, ~5 min) ou `npm run k6:estresse` (até o limite, ~9 min). Precisa do [k6](https://grafana.com/docs/k6/latest/set-up/install-k6/) instalado. Detalhes, metas e como gerar o relatório em HTML: [tests/k6/README.md](tests/k6/README.md).
+
+**Medições de SLA** (latência, vazão e limite de concorrência por serviço, com gráficos e hipóteses de gargalo): [docs/SLA.md](docs/SLA.md). Para gerar ou atualizar, rode o workflow **Medições de SLA (k6)** na aba Actions; veja [tests/k6/sla/README.md](tests/k6/sla/README.md).

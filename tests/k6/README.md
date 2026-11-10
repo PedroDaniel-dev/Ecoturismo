@@ -11,6 +11,8 @@ tests/k6/
 └── estresse.js     ~9 min, sobe até 200 visitantes: descobre o limite da API
 ```
 
+As **medições de SLA por serviço** (busca, visitas e login, com a página `docs/SLA.md`) ficam em [`sla/`](sla/README.md).
+
 ## Instalar o k6
 
 | Sistema | Comando |
