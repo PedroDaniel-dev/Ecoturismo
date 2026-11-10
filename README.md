@@ -62,3 +62,6 @@ Valores aceitos: `dificuldade` = FACIL, MEDIO, DIFICIL (MEDIO aparece como "Mode
 - **Fotos do catálogo:** tabela `TRILHA_IMAGEM` (URL do Wikimedia Commons + página de crédito). Trilha sem foto, ou foto que não carrega, mostra uma ilustração gerada em `frontend/src/utils/trailArt.js`.
 - **Fotos enviadas** (perfil e trilhas) ficam em `backend/uploads/` (ou em `UPLOADS_DIR`); o banco guarda só a URL.
 
+
+## Testes de desempenho (k6)
+Com o backend rodando, `npm run k6:smoke` (verificação rápida), `npm run k6:carga` (uso esperado, ~5 min) ou `npm run k6:estresse` (até o limite, ~9 min). Precisa do [k6](https://grafana.com/docs/k6/latest/set-up/install-k6/) instalado. Detalhes, metas e como gerar o relatório em HTML: [tests/k6/README.md](tests/k6/README.md).

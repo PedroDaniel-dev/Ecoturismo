@@ -6,7 +6,10 @@
     "dev": "concurrently --names back,front --prefix-colors yellow,cyan --kill-others \"npm run back\" \"npm run front\"",
     "back": "cd backend && ./mvnw spring-boot:run",
     "front": "npm --prefix frontend run dev",
-    "test": "cd backend && ./mvnw test"
+    "test": "cd backend && ./mvnw test",
+    "k6:smoke": "k6 run tests/k6/smoke.js",
+    "k6:carga": "k6 run tests/k6/carga.js",
+    "k6:estresse": "k6 run tests/k6/estresse.js"
   },
   "devDependencies": {
     "concurrently": "^9.2.5"
