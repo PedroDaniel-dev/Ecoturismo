@@ -1,10 +1,10 @@
 package br.com.ecoturismo.visita;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,7 +12,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import br.com.ecoturismo.bloqueio.BloqueioRepository;
 import br.com.ecoturismo.trilha.TrilhaService;
-import br.com.ecoturismo.usuario.Usuario;
 import br.com.ecoturismo.usuario.UsuarioService;
 import br.com.ecoturismo.visita.dto.ConcluirVisitaRequest;
 import br.com.ecoturismo.visita.dto.RegistrarVisitaRequest;
@@ -57,28 +56,24 @@ public class VisitaService {
 
     public Visita planejar(String email, VisitaRequest req) {
         trilhaService.garantirQueExiste(req.trilhaId());
-        Long meuId = usuarioService.buscarPorEmail(email).getId();
-        exigirDataLivre(meuId, req.trilhaId(), req.data());
         Visita v = new Visita();
-        v.setUsuarioId(meuId);
+        v.setUsuarioId(usuarioService.idPorEmail(email));
         v.setTrilhaId(req.trilhaId());
         v.setData(req.data());
-        return repository.save(v);
+        return inserir(v);
     }
 
     /** Visita que já aconteceu, registrada de uma vez com a nota. */
     public Visita registrarConcluida(String email, RegistrarVisitaRequest req) {
         trilhaService.garantirQueExiste(req.trilhaId());
-        Long meuId = usuarioService.buscarPorEmail(email).getId();
-        exigirDataLivre(meuId, req.trilhaId(), req.data());
         Visita v = new Visita();
-        v.setUsuarioId(meuId);
+        v.setUsuarioId(usuarioService.idPorEmail(email));
         v.setTrilhaId(req.trilhaId());
         v.setData(req.data());
         v.setStatus(StatusVisita.CONCLUIDA);
         v.setAvaliacao(meiaEstrela(req.avaliacao()));
         v.setComentario(texto(req.comentario()));
-        return repository.save(v);
+        return inserir(v);
     }
 
     public Visita concluir(String email, Long id, ConcluirVisitaRequest req) {
@@ -95,9 +90,13 @@ public class VisitaService {
         return repository.save(v);
     }
 
-    // o banco tem UNIQUE (idUsuario, idTrilha, data): melhor avisar com uma mensagem clara do que estourar o índice
-    private void exigirDataLivre(Long usuarioId, Long trilhaId, LocalDate data) {
-        if (repository.existsByUsuarioIdAndTrilhaIdAndData(usuarioId, trilhaId, data)) {
+    // o banco tem UNIQUE (idUsuario, idTrilha, data). Deixar o índice decidir evita uma consulta a mais e não tem a
+    // brecha de "conferir e depois inserir", em que duas requisições iguais ao mesmo tempo passariam pela conferência.
+    // A trilha e o usuário já foram conferidos antes, então a única violação possível aqui é a data repetida.
+    private Visita inserir(Visita v) {
+        try {
+            return repository.saveAndFlush(v);
+        } catch (DataIntegrityViolationException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Você já registrou uma visita a esta trilha nesta data");
         }
     }
@@ -116,10 +115,10 @@ public class VisitaService {
     }
 
     private Visita doUsuario(String email, Long id) {
-        Usuario u = usuarioService.buscarPorEmail(email);
+        Long meuId = usuarioService.idPorEmail(email);
         Visita v = repository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Visita não encontrada"));
-        if (!v.getUsuarioId().equals(u.getId())) {
+        if (!v.getUsuarioId().equals(meuId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Esta visita pertence a outro usuário");
         }
         return v;

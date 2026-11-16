@@ -1,6 +1,5 @@
 package br.com.ecoturismo.visita;
 
-import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 
@@ -15,6 +14,4 @@ public interface VisitaRepository extends JpaRepository<Visita, Long> {
     List<Visita> findByTrilhaIdAndStatus(Long trilhaId, StatusVisita status);
 
     List<Visita> findByUsuarioIdInAndStatus(Collection<Long> usuarioIds, StatusVisita status);
-
-    boolean existsByUsuarioIdAndTrilhaIdAndData(Long usuarioId, Long trilhaId, LocalDate data);
 }

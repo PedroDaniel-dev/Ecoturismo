@@ -31,23 +31,30 @@ public class UsuarioService {
         if (repository.existsByEmail(email)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "E-mail já cadastrado");
         }
-        Usuario u = new Usuario(nome.trim(), email.trim().toLowerCase(), passwordEncoder.encode(senha), dataNascimento, Role.USER);
+        Usuario u = new Usuario(nome.trim(), UsuarioRepository.normalizarEmail(email), passwordEncoder.encode(senha), dataNascimento, Role.USER);
         return repository.save(u);
     }
 
     public Usuario criarAdminSeNaoExistir(String email, String senha, LocalDate dataNascimento) {
-        return repository.findByEmail(email).orElseGet(() ->
-                repository.save(new Usuario("Administrador", email, passwordEncoder.encode(senha), dataNascimento, Role.ADMIN)));
+        return repository.findByEmail(email).orElseGet(() -> repository.save(
+                new Usuario("Administrador", UsuarioRepository.normalizarEmail(email), passwordEncoder.encode(senha), dataNascimento, Role.ADMIN)));
     }
 
     public Usuario criarUsuarioSeNaoExistir(String nome, String email, String senha, LocalDate dataNascimento) {
-        return repository.findByEmail(email).orElseGet(() ->
-                repository.save(new Usuario(nome, email, passwordEncoder.encode(senha), dataNascimento, Role.USER)));
+        return repository.findByEmail(email).orElseGet(() -> repository.save(
+                new Usuario(nome, UsuarioRepository.normalizarEmail(email), passwordEncoder.encode(senha), dataNascimento, Role.USER)));
     }
 
     @Transactional(readOnly = true)
     public Usuario buscarPorEmail(String email) {
         return repository.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
+    }
+
+    /** Só o id, sem carregar o usuário e as curtidas: para quem só precisa saber de quem é a requisição. */
+    @Transactional(readOnly = true)
+    public Long idPorEmail(String email) {
+        return repository.findIdByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
     }
 

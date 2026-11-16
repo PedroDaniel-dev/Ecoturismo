@@ -18,6 +18,10 @@ backend/uploads/
 !.env.example
 *.local
 
+# Resultados brutos dos testes de carga (k6): grandes e refeitos a cada execução
+sla-saida/
+tests/k6/resultados/
+
 # Logs
 *.log
 npm-debug.log*
@@ -28,6 +32,3 @@ npm-debug.log*
 .vscode/
 .DS_Store
 Thumbs.db
-
-# Configurações locais do Claude Code (as compartilhadas ficam em .claude/settings.json)
-.claude/settings.local.json

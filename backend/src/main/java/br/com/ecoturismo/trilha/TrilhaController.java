@@ -41,7 +41,7 @@ public class TrilhaController {
                                        @RequestParam(required = false) List<Dificuldade> dificuldade,
                                        @RequestParam(required = false) List<Zona> zona,
                                        @RequestParam(required = false) FaixaDuracao duracao) {
-        return service.buscar(q, dificuldade, zona, duracao).stream().map(TrilhaResponse::de).toList();
+        return service.buscar(q, dificuldade, zona, duracao);
     }
 
     @GetMapping("/destaques")

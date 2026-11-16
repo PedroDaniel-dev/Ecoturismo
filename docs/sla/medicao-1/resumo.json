@@ -1,0 +1,371 @@
+{
+  "data": "16/11/2026",
+  "ambiente": {
+    "so": "Microsoft Windows 10 Pro",
+    "cpu": "AMD Ryzen 7 7800X3D 8-Core Processor",
+    "memoria": "32 GB",
+    "nucleos": "16",
+    "k6": "k6 v2.4.0",
+    "java": "Java 25.0.3",
+    "mysql": "MySQL 8.0.45"
+  },
+  "servicos": {
+    "busca-trilhas": {
+      "degraus": [
+        {
+          "vus": 10,
+          "requisicoes": 57063,
+          "latencia_media": 8.619690757583722,
+          "p95": 9.799219999999996,
+          "p99": 12.008638,
+          "max": 51.5268,
+          "vazao": 1141.3969676361164,
+          "erros": 0.0,
+          "bloqueio_medio": 0.008166912009533322,
+          "por_endpoint": {
+            "GET /api/trilhas": 8.619690757583722
+          },
+          "dentro_sla": true
+        },
+        {
+          "vus": 25,
+          "requisicoes": 58842,
+          "latencia_media": 21.022101029876616,
+          "p95": 24.197785,
+          "p99": 32.57827299999998,
+          "max": 71.144,
+          "vazao": 1176.8870754830193,
+          "erros": 0.0,
+          "bloqueio_medio": 0.009920478569729106,
+          "por_endpoint": {
+            "GET /api/trilhas": 21.022101029876616
+          },
+          "dentro_sla": true
+        },
+        {
+          "vus": 50,
+          "requisicoes": 59794,
+          "latencia_media": 41.641242806970595,
+          "p95": 44.412459999999996,
+          "p99": 74.749533,
+          "max": 155.5754,
+          "vazao": 1194.6614453257678,
+          "erros": 0.0,
+          "bloqueio_medio": 0.00884351439943807,
+          "por_endpoint": {
+            "GET /api/trilhas": 41.641242806970595
+          },
+          "dentro_sla": true
+        },
+        {
+          "vus": 100,
+          "requisicoes": 59123,
+          "latencia_media": 84.38798809769463,
+          "p95": 92.86095999999999,
+          "p99": 163.23072399999995,
+          "max": 360.972,
+          "vazao": 1176.2260021884015,
+          "erros": 0.0,
+          "bloqueio_medio": 0.008714640664377653,
+          "por_endpoint": {
+            "GET /api/trilhas": 84.38798809769463
+          },
+          "dentro_sla": true
+        },
+        {
+          "vus": 150,
+          "requisicoes": 58447,
+          "latencia_media": 128.0502760980033,
+          "p95": 141.44440999999998,
+          "p99": 253.46283000000005,
+          "max": 663.1818,
+          "vazao": 1163.9350791596137,
+          "erros": 0.0,
+          "bloqueio_medio": 0.009999524355398907,
+          "por_endpoint": {
+            "GET /api/trilhas": 128.0502760980033
+          },
+          "dentro_sla": true
+        },
+        {
+          "vus": 200,
+          "requisicoes": 60011,
+          "latencia_media": 166.476306325507,
+          "p95": 178.3533,
+          "p99": 323.32792000000006,
+          "max": 693.0051,
+          "vazao": 1194.2249905474519,
+          "erros": 0.0,
+          "bloqueio_medio": 0.007301824665477996,
+          "por_endpoint": {
+            "GET /api/trilhas": 166.476306325507
+          },
+          "dentro_sla": true
+        }
+      ],
+      "limite": 200,
+      "primeiro_estouro": null,
+      "geral": {
+        "requisicoes": 430139,
+        "erros": 0.0,
+        "latencia": {
+          "media": 74.4164005112301,
+          "mediana": 52.0659,
+          "min": 6.016,
+          "max": 693.0051,
+          "p95": 166.1599,
+          "p99": 181.85904
+        },
+        "bloqueio": {
+          "media": 0.008764309444156423,
+          "mediana": 0.0,
+          "min": 0.0,
+          "max": 41.6021,
+          "p95": 0.0,
+          "p99": 0.5049
+        }
+      },
+      "status_erros": {}
+    },
+    "visitas": {
+      "degraus": [
+        {
+          "vus": 10,
+          "requisicoes": 79892,
+          "latencia_media": 6.217796534070996,
+          "p95": 8.97021999999999,
+          "p99": 14.3286,
+          "max": 38.8817,
+          "vazao": 1597.712183025358,
+          "erros": 0.0,
+          "bloqueio_medio": 0.003246064687327893,
+          "por_endpoint": {
+            "PATCH /api/visitas/{id}/cancelar": 6.100084847043509,
+            "POST /api/visitas": 6.3355082210984826
+          },
+          "dentro_sla": true
+        },
+        {
+          "vus": 25,
+          "requisicoes": 43092,
+          "latencia_media": 28.933707439896036,
+          "p95": 56.98099,
+          "p99": 89.49943099999987,
+          "max": 142.1473,
+          "vazao": 860.5663617845589,
+          "erros": 0.0,
+          "bloqueio_medio": 0.004873716699155296,
+          "por_endpoint": {
+            "PATCH /api/visitas/{id}/cancelar": 28.220420249698325,
+            "POST /api/visitas": 29.646994630093754
+          },
+          "dentro_sla": true
+        },
+        {
+          "vus": 50,
+          "requisicoes": 33438,
+          "latencia_media": 74.51477769603446,
+          "p95": 123.7686,
+          "p99": 157.55333999999988,
+          "max": 346.8745,
+          "vazao": 668.7867514700588,
+          "erros": 0.0,
+          "bloqueio_medio": 0.0070454153956576344,
+          "por_endpoint": {
+            "PATCH /api/visitas/{id}/cancelar": 73.44826737843172,
+            "POST /api/visitas": 75.58128801363718
+          },
+          "dentro_sla": true
+        },
+        {
+          "vus": 100,
+          "requisicoes": 34288,
+          "latencia_media": 145.6578263240784,
+          "p95": 215.16866999999996,
+          "p99": 254.33251899999937,
+          "max": 372.7,
+          "vazao": 682.0089507707609,
+          "erros": 0.0,
+          "bloqueio_medio": 0.0070528814745683625,
+          "por_endpoint": {
+            "PATCH /api/visitas/{id}/cancelar": 144.38691991950537,
+            "POST /api/visitas": 146.92873272865145
+          },
+          "dentro_sla": true
+        },
+        {
+          "vus": 150,
+          "requisicoes": 34128,
+          "latencia_media": 219.51361124296764,
+          "p95": 324.2441,
+          "p99": 443.8783,
+          "max": 755.5797,
+          "vazao": 678.5969935576235,
+          "erros": 0.0,
+          "bloqueio_medio": 0.007049665963431787,
+          "por_endpoint": {
+            "PATCH /api/visitas/{id}/cancelar": 217.3850743495077,
+            "POST /api/visitas": 221.64214813642755
+          },
+          "dentro_sla": true
+        },
+        {
+          "vus": 200,
+          "requisicoes": 35204,
+          "latencia_media": 284.97855151119194,
+          "p95": 405.97149999999993,
+          "p99": 485.63960800000046,
+          "max": 827.4302,
+          "vazao": 688.6945634524718,
+          "erros": 0.0,
+          "bloqueio_medio": 0.006080149982956482,
+          "por_endpoint": {
+            "PATCH /api/visitas/{id}/cancelar": 283.20788328030903,
+            "POST /api/visitas": 286.7492197420748
+          },
+          "dentro_sla": true
+        }
+      ],
+      "limite": 200,
+      "primeiro_estouro": null,
+      "geral": {
+        "requisicoes": 316330,
+        "erros": 0.0,
+        "latencia": {
+          "media": 101.42317081022982,
+          "mediana": 62.174099999999996,
+          "min": 3.0154,
+          "max": 827.4302,
+          "p95": 303.42103499999996,
+          "p99": 390.0522
+        },
+        "bloqueio": {
+          "media": 0.00556787942970948,
+          "mediana": 0.0,
+          "min": 0.0,
+          "max": 5.0021,
+          "p95": 0.0,
+          "p99": 0.0
+        }
+      },
+      "status_erros": {}
+    },
+    "login": {
+      "degraus": [
+        {
+          "vus": 10,
+          "requisicoes": 7782,
+          "latencia_media": 64.14581876124389,
+          "p95": 68.71633499999999,
+          "p99": 76.75053299999995,
+          "max": 104.5688,
+          "vazao": 155.64933896033762,
+          "erros": 0.0,
+          "bloqueio_medio": 0.007956913389874068,
+          "por_endpoint": {
+            "POST /api/auth/login": 64.14581876124389
+          },
+          "dentro_sla": true
+        },
+        {
+          "vus": 25,
+          "requisicoes": 10358,
+          "latencia_media": 119.4197025487546,
+          "p95": 215.59427000000002,
+          "p99": 319.21186100000034,
+          "max": 1218.6516,
+          "vazao": 206.8084256763502,
+          "erros": 0.0,
+          "bloqueio_medio": 0.03689468044023943,
+          "por_endpoint": {
+            "POST /api/auth/login": 119.4197025487546
+          },
+          "dentro_sla": true
+        },
+        {
+          "vus": 50,
+          "requisicoes": 10391,
+          "latencia_media": 236.01896652872676,
+          "p95": 470.1608,
+          "p99": 664.07299,
+          "max": 1745.5117,
+          "vazao": 207.59994405929714,
+          "erros": 0.0,
+          "bloqueio_medio": 0.12997864498123377,
+          "por_endpoint": {
+            "POST /api/auth/login": 236.01896652872676
+          },
+          "dentro_sla": true
+        },
+        {
+          "vus": 100,
+          "requisicoes": 10432,
+          "latencia_media": 469.4333740701687,
+          "p95": 835.6443849999998,
+          "p99": 1065.985453,
+          "max": 2817.3074,
+          "vazao": 206.20268427190607,
+          "erros": 0.0,
+          "bloqueio_medio": 0.30224398964723925,
+          "por_endpoint": {
+            "POST /api/auth/login": 469.4333740701687
+          },
+          "dentro_sla": true
+        },
+        {
+          "vus": 150,
+          "requisicoes": 10455,
+          "latencia_media": 670.1592557723577,
+          "p95": 1224.84828,
+          "p99": 1606.3722399999974,
+          "max": 3848.228,
+          "vazao": 206.79219905850707,
+          "erros": 0.0,
+          "bloqueio_medio": 0.9153095074127212,
+          "por_endpoint": {
+            "POST /api/auth/login": 670.1592557723577
+          },
+          "dentro_sla": false
+        },
+        {
+          "vus": 200,
+          "requisicoes": 10468,
+          "latencia_media": 871.7397105082155,
+          "p95": 1586.13449,
+          "p99": 2633.5018389999977,
+          "max": 4961.3833,
+          "vazao": 198.8035324280695,
+          "erros": 0.0,
+          "bloqueio_medio": 1.9417115303782952,
+          "por_endpoint": {
+            "POST /api/auth/login": 871.7397105082155
+          },
+          "dentro_sla": false
+        }
+      ],
+      "limite": 100,
+      "primeiro_estouro": 150,
+      "geral": {
+        "requisicoes": 73127,
+        "erros": 0.0,
+        "latencia": {
+          "media": 412.8669575560327,
+          "mediana": 286.6244,
+          "min": 53.5557,
+          "max": 4961.3833,
+          "p95": 1120.9343599999993,
+          "p99": 1586.0489
+        },
+        "bloqueio": {
+          "media": 0.7629297673909773,
+          "mediana": 0.0,
+          "min": 0.0,
+          "max": 2685.9514,
+          "p95": 0.0,
+          "p99": 0.9969
+        }
+      },
+      "status_erros": {}
+    }
+  }
+}

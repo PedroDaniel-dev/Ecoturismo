@@ -3,6 +3,7 @@ package br.com.ecoturismo.security;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,6 +14,7 @@ import br.com.ecoturismo.security.dto.AuthResponse;
 import br.com.ecoturismo.security.dto.LoginRequest;
 import br.com.ecoturismo.security.dto.RegisterRequest;
 import br.com.ecoturismo.usuario.Usuario;
+import br.com.ecoturismo.usuario.UsuarioRepository;
 import br.com.ecoturismo.usuario.UsuarioService;
 import br.com.ecoturismo.usuario.dto.UsuarioResponse;
 import jakarta.validation.Valid;
@@ -33,8 +35,9 @@ public class AuthController {
 
     @PostMapping("/login")
     public AuthResponse login(@Valid @RequestBody LoginRequest req) {
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(req.email().trim().toLowerCase(), req.senha()));
-        Usuario u = usuarioService.buscarPorEmail(req.email());
+        Authentication auth = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(UsuarioRepository.normalizarEmail(req.email()), req.senha()));
+        Usuario u = ((UsuarioDetailsService.UsuarioAutenticado) auth.getPrincipal()).getUsuario();
         return new AuthResponse(jwtService.gerarToken(u), UsuarioResponse.de(u));
     }
 
